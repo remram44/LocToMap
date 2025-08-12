@@ -1,10 +1,10 @@
-from typing import Union
-
-from fastapi import FastAPI
-from starlette.responses import FileResponse 
-
 import dns.resolver
+from fastapi import FastAPI
+import logging
 import re
+from starlette.responses import FileResponse
+
+logger = logging.getLogger('LocToMap')
 
 app = FastAPI()
 COORD_PATTERN = r"(\d+) (\d+) (\d+\.\d+) ([NS]) (\d+) (\d+) (\d+\.\d+) ([EW])"
@@ -23,6 +23,7 @@ async def get_loc_record(domain: str) -> dict:
         loc_data = {}
         for record in response:
             full_record = str(record)
+            logger.info("Got LOC record %s %s", domain, full_record)
             match = re.search(COORD_PATTERN, full_record)
             if match:
                 latitude_degrees = int(match.group(1))
@@ -48,3 +49,5 @@ async def get_loc_record(domain: str) -> dict:
         return loc_data
     except Exception as e:
         return {"error": str(e)}
+
+logging.basicConfig(level=logging.INFO)
