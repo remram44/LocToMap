@@ -17,7 +17,7 @@ async def read_index():
     return FileResponse('map.html')
 
 def get_loc_record(domain: str) -> dict | None:
-    # Might raise dns.resolver.NoAnswer
+    # Might raise NoAnswer or NXDOMAIN
     response = dns.resolver.resolve(domain, "LOC")
 
     for record in response:
@@ -58,14 +58,14 @@ async def get_loc(domain: str) -> dict:
         tried.add(domain)
         logger.info("Trying %r", domain)
         return get_loc_record(domain)
-    except dns.resolver.NoAnswer:
+    except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN):
         pass
 
     # Resolve to IP addresses
     for addr_type in ("A", "AAAA"):
         try:
             response = dns.resolver.resolve(domain, addr_type)
-        except dns.resolver.NoAnswer:
+        except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN):
             pass
         else:
             for record in response:
@@ -79,7 +79,7 @@ async def get_loc(domain: str) -> dict:
                         # Get LOC record for that name
                         tried.add(name)
                         return get_loc_record(name)
-                except dns.resolver.NoAnswer:
+                except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN):
                     pass
 
     return {"error": "No LOC record found"}
