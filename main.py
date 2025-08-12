@@ -19,7 +19,7 @@ async def read_index():
 @app.get("/api/{domain}")
 async def get_loc_record(domain: str) -> dict:
     try:
-        response = dns.resolver.query(domain, "LOC")
+        response = dns.resolver.resolve(domain, "LOC")
         loc_data = {}
         for record in response:
             full_record = str(record)
