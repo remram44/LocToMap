@@ -20,7 +20,6 @@ async def read_index():
 async def get_loc_record(domain: str) -> dict:
     try:
         response = dns.resolver.resolve(domain, "LOC")
-        loc_data = {}
         for record in response:
             full_record = str(record)
             logger.info("Got LOC record %s %s", domain, full_record)
@@ -43,10 +42,13 @@ async def get_loc_record(domain: str) -> dict:
                 if hemisphere_east_west == 'W':
                     longitude *= -1
 
-                loc_data["latitude"] = str(latitude)
-                loc_data["longitude"] = str(longitude)
-                loc_data['full'] = full_record
-        return loc_data
+                return dict(
+                    domain=domain,
+                    latitude=str(latitude),
+                    longitude=str(longitude),
+                    full=full_record,
+                )
+        return {"error": "No LOC record found"}
     except Exception as e:
         return {"error": str(e)}
 
